@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { DatePickerModule } from 'primeng/datepicker';
 
 @Component({
     selector: 'app-home',
-    imports: [],
+    imports: [DatePickerModule],
     templateUrl: './home.component.html',
     styleUrl: './home.component.scss'
 })

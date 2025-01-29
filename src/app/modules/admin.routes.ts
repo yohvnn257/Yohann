@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { Utilisateur } from '../../shared/models/utilisateur';
+import { HomeComponent } from './admin/home/home.component';
+import { UtilisateurComponent } from './admin/utilisateur/utilisateur.component';
 
 export const ADMIN_ROUTES: Route[] = [
     {
@@ -9,6 +9,6 @@ export const ADMIN_ROUTES: Route[] = [
     },
     {
         path: 'utilisateur',
-        component: Utilisateur
+        component: UtilisateurComponent
     }
 ];
