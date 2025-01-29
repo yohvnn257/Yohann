@@ -22,8 +22,8 @@ RUN npm run build -- $ENVIRONMENT
 ### STAGE 2: LANCEMENT DE L'APPLICATION ###
 # Definition de l'image nginx à utliser
 FROM nginx:latest AS ngi
-COPY --from=build /dist/src/app/dist/bhadmin /usr/share/nginx/html
+COPY --from=build /dist/src/app/dist/starter/browser /usr/share/nginx/html
 COPY /nginx.conf  /etc/nginx/conf.d/default.conf
-# Exposé le port 7003
-EXPOSE 7010
+# Exposé le port 4200
+EXPOSE 4200
 
