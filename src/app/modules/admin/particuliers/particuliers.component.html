@@ -41,118 +41,126 @@
     </div>
 </div>
 
-
-<div class="card">
-    <p-table
-        #dt1
-        [value]="listeClientParticuliers"
-       
-        selectionMode="single"
-        dataKey="id"
-        [tableStyle]="{ 'min-width': '50rem' }"
-        [rows]="5"
-        [paginator]="true"
-        stateStorage="session"
-        stateKey="statedemo-session">
-
-        <div class="grid">
-            <div class="col-6 ">
-              <div class="p-inputgroup">
-                  <span class="p-inputgroup-addon">
-                      <i class="pi pi-search"></i>
-                  </span>
-                  <input
-                      pInputText
-                      type="text"
-                      placeholder="Rechercher client"
-                  />
-              </div>
-            </div>
-            <div class="col-6 ">
-              <p-button label="Nouvelle facture" icon="pi pi-plus" [raised]="true" [rounded]="false" class="p-button-sm primaryColor" />
-            </div>
-      </div>
-
-        <ng-template pTemplate="header">
-            <tr>
-                <th pSortableColumn="numeroFacture" style="width:20%">
-                    Numéro de facture
-                </th>
-                <th pSortableColumn="entreprise" style="width:20%">
-                    Entreprise
-                </th>
-                <th pSortableColumn="montantTotal" style="width:17%">
-                    Montant total
-                </th>
-                <th pSortableColumn="montantTotal" style="width:17%">
-                    Montant restant
-                </th>
-                <th pSortableColumn="statut" style="width:10%">
-                    Statut <p-sortIcon field="statut" />
-                </th>
-                <th pSortableColumn="status" style="width:20%">
-                    Actions
-                </th>
-            </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-facture>
-            <tr [pSelectableRow]="facture">
-                <td>
-                    <span class="p-column-title">Numéro</span>
-                   {{facture.numeroFacture}}
-                </td>
-                <td>
-                    <span class="p-column-title">Entreprise</span>
-
-                    <span class="ml-1 vertical-align-middle"> jdsfb</span>
-                </td>
-                <td>
-                    <span class="p-column-title">Montant</span>
-
-                    <span class="ml-1 vertical-align-middle">dfb</span>
-                </td>
-                <td>
-                    <span class="p-column-title">Montant restant</span>
-
-                    <span class="ml-1 vertical-align-middle">jbj</span>
-                </td>
-                <td>
-                    <span class="p-column-title">Status</span>
-                    <span class="ml-1 vertical-align-middle">hih </span>
-
-                </td>
-                <td class="flex flex-wrap items-center justify-content-center gap-4">
-                    <div class="flex items-center gap-1"  pTooltip="Modifier la facture"
-                    tooltipPosition="right" >
-                        <span><i class="pi pi-pencil icon-action" ></i></span>
+<div  [ngSwitch]="page">
+    <div *ngSwitchCase="'Accueil'">
+        <div class="card">
+            <p-table
+                #dt1
+                [value]="listeClientParticuliers"
+               
+                selectionMode="single"
+                dataKey="id"
+                [tableStyle]="{ 'min-width': '50rem' }"
+                [rows]="5"
+                [paginator]="true"
+                stateStorage="session"
+                stateKey="statedemo-session">
+        
+                <ng-template pTemplate="caption">
+                    <div class="flex justify-between">
+                        <h4 class="font-bold m-0 flex">Liste des particuliers</h4>
+                        <div class="flex">
+                           
+                            <p-iconfield>
+                                <p-inputicon styleClass="pi pi-search" />
+                                <input type="text" pInputText placeholder="Rechercher compte ..." />
+                            </p-iconfield>
+                            <button pButton pRipple label="Nouveau compte" class="ml-2" icon="pi pi-plus" (click)="ecranCreationCompte()" ></button>
+                        </div> 
                     </div>
-
-                    <div class="flex items-center gap-1"  pTooltip="Supprimer la facture"
-                    tooltipPosition="right" >
-
-                       <span><i class="pi pi-trash icon-action" ></i></span>
-                    </div>
-
-                    <div class="flex items-center gap-1"  pTooltip="Voir les differents paiements"
-                    tooltipPosition="right" >
-                        <span><i class="pi pi-credit-card icon-action" ></i></span>
-                    </div>
-
-                    <div class="flex items-center gap-1"  pTooltip="Voir les details de la facture"
-                    tooltipPosition="right">
-                        <span><i class="pi pi-eye icon-action" ></i></span>
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage">
-            <tr>
-                <td colspan="5" style="text-align: center;">Aucune facture trouvée</td>
-            </tr>
-        </ng-template>
-    </p-table>
+                </ng-template>
+        
+        
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="numeroFacture" style="width:20%">
+                            Numéro de facture
+                        </th>
+                        <th pSortableColumn="entreprise" style="width:20%">
+                            Entreprise
+                        </th>
+                        <th pSortableColumn="montantTotal" style="width:17%">
+                            Montant total
+                        </th>
+                        <th pSortableColumn="montantTotal" style="width:17%">
+                            Montant restant
+                        </th>
+                        <th pSortableColumn="statut" style="width:10%">
+                            Statut <p-sortIcon field="statut" />
+                        </th>
+                        <th pSortableColumn="status" style="width:20%">
+                            Actions
+                        </th>
+                    </tr>
+                </ng-template>
+        
+                <ng-template pTemplate="body" let-facture>
+                    <tr [pSelectableRow]="facture">
+                        <td>
+                            <span class="p-column-title">Numéro</span>
+                           {{facture.numeroFacture}}
+                        </td>
+                        <td>
+                            <span class="p-column-title">Entreprise</span>
+        
+                            <span class="ml-1 vertical-align-middle"> jdsfb</span>
+                        </td>
+                        <td>
+                            <span class="p-column-title">Montant</span>
+        
+                            <span class="ml-1 vertical-align-middle">dfb</span>
+                        </td>
+                        <td>
+                            <span class="p-column-title">Montant restant</span>
+        
+                            <span class="ml-1 vertical-align-middle">jbj</span>
+                        </td>
+                        <td>
+                            <span class="p-column-title">Status</span>
+                            <span class="ml-1 vertical-align-middle">hih </span>
+        
+                        </td>
+                        <td class="flex flex-wrap items-center justify-content-center gap-4">
+                            <div class="flex items-center gap-1"  pTooltip="Modifier la facture"
+                            tooltipPosition="right" >
+                                <span><i class="pi pi-pencil icon-action" ></i></span>
+                            </div>
+        
+                            <div class="flex items-center gap-1"  pTooltip="Supprimer la facture"
+                            tooltipPosition="right" >
+        
+                               <span><i class="pi pi-trash icon-action" ></i></span>
+                            </div>
+        
+                            <div class="flex items-center gap-1"  pTooltip="Voir les differents paiements"
+                            tooltipPosition="right" >
+                                <span><i class="pi pi-credit-card icon-action" ></i></span>
+                            </div>
+        
+                            <div class="flex items-center gap-1"  pTooltip="Voir les details de la facture"
+                            tooltipPosition="right">
+                                <span><i class="pi pi-eye icon-action" ></i></span>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Aucune facture trouvée</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+        
+    </div>
+    <div *ngSwitchCase="'creation'">
+        <app-creation-compte-particulier (creationCompteParticulier)="ecranAcueil()"></app-creation-compte-particulier>
+    </div>
 </div>
+
+
+
+
 
 
 
