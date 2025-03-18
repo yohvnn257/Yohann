@@ -1,0 +1,290 @@
+<!-- Contenu principal -->
+<main class="flex-1 p-6">
+    <!-- Bouton pour ajouter une évaluation -->
+    <div class="flex justify-end mb-8">
+        <p-button
+            label="Ajouter une évaluation"
+            icon="pi pi-plus"
+            (onClick)="openEvaluationForm()"
+            styleClass="p-button-rounded p-button-lg shadow-lg bg-gradient-to-r  transition-all duration-300
+            duration-300 animate-bounce"
+        >
+        </p-button>
+    </div>
+
+    <!-- Liste des évaluations existantes (ajoutez votre logique pour afficher les évaluations) -->
+    <p-card class="p-4 shadow-lg">
+        <h2 class="text-xl font-bold mb-4">Évaluations récentes</h2>
+        <p-table class="min-w-full bg-white border border-gray-300" [value]="evaluations" [paginator]="true" [rows]="5" class="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr class="bg-gray-200">
+                    <th class="py-2 px-4 border border-gray-300 text-center">Fournisseur</th>
+                    <th class="py-2 px-4 border border-gray-300 text-center">N° BC</th>
+                    <th class="py-2 px-4 border border-gray-300 text-center">Direction</th>
+                    <th class="py-2 px-4 border border-gray-300 text-center">Date</th>
+                    <th class="py-2 px-4 border border-gray-300 text-center">Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-evaluation>
+                <tr>
+                    <td>{{ evaluation.name }}</td>
+                    <td>{{ evaluation.numero_bc }}</td>
+                    <td>{{ evaluation.beneficiary?.direction }}</td>
+                    <td>{{ evaluation.createdAt | date: 'dd/MM/yyyy' }}</td>
+                    <td>
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text" (click)="viewEvaluation(evaluation)"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5" class="text-center p-4">Aucune évaluation disponible</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
+
+    <!-- Dialog pour le formulaire -->
+    <p-dialog [(visible)]="displayDialog" [modal]="true" [dismissableMask]="true" [draggable]="false" [resizable]="false" styleClass="evaluation-dialog" [style]="{ width: '120%', maxWidth: '1500px' }" [closeOnEscape]="true">
+        <ng-template pTemplate="header">
+            <div class="dialog-header">
+                <h2 class="text-xl font-semibold">Formulaire d'évaluation</h2>
+            </div>
+        </ng-template>
+
+        <!-- Contenu du formulaire -->
+        <div>
+            <p-stepper [(value)]="activeStep">
+                <!-- Étapes du stepper -->
+                <p-step-list class="mb-6">
+                    <p-step [value]="1" class="flex flex-row flex-auto gap-2">
+                        <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                            <button type="button" [disabled]="value > activeStep" aria-label="Step 1: Informations Fournisseur" class="bg-transparent border-0 inline-flex flex-col gap-2" (click)="activateCallback()">
+                                <span
+                                    class="rounded-full border-2 w-14 h-14 inline-flex items-center justify-center transition-all duration-300"
+                                    [ngClass]="{
+                                        'bg-indigo-600 text-white border-indigo-600': value <= activeStep,
+                                        'border-gray-300': value > activeStep
+                                    }"
+                                >
+                                    <i class="pi pi-building text-xl"></i>
+                                </span>
+                                <span class="text-sm font-medium"> Fournisseur </span>
+                            </button>
+                        </ng-template>
+                    </p-step>
+
+                    <p-step [value]="2" class="flex flex-row flex-auto gap-2">
+                        <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                            <button type="button" [disabled]="value > activeStep" aria-label="Step 2: Évaluation" class="bg-transparent border-0 inline-flex flex-col gap-2" (click)="activateCallback()">
+                                <span
+                                    class="rounded-full border-2 w-14 h-14 inline-flex items-center justify-center transition-all duration-300"
+                                    [ngClass]="{
+                                        'bg-indigo-600 text-white border-indigo-600': value <= activeStep,
+                                        'border-gray-300': value > activeStep
+                                    }"
+                                >
+                                    <i class="pi pi-chart-bar text-xl"></i>
+                                </span>
+                                <span class="text-sm font-medium"> Évaluation </span>
+                            </button>
+                        </ng-template>
+                    </p-step>
+                </p-step-list>
+
+                <p-step-panels>
+                    <p-step-panel [value]="1">
+                        <ng-template #content let-activateCallback="activateCallback">
+                            <!-- Contenu de l'étape 1 -->
+                            <div class="card p-4 border-l-4 border-whithe shadow-lg bg-gray-600">
+                                <div class="text-center mb-6">
+                                    <h2 class="text-2xl font-bold">Fiche signalétique fournisseur</h2>
+                                    <div class="divider my-2 mx-auto w-24"></div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Ligne 1 : Nom et Adresse -->
+                                    <div class="field">
+                                        <span class="p-float-label w-full">
+                                            <input [(ngModel)]="name" pInputText id="name" required [disabled]="readOnly" class="w-full border border-gray-300 focus:border-indigo-600 focus:ring focus:ring-indigo-200" />
+                                            <label for="name">Nom du fournisseur *</label>
+                                        </span>
+                                        <small class="p-error text-red-500" *ngIf="!name && submitted">Ce champ est requis</small>
+                                    </div>
+
+                                    <div class="field">
+                                        <span class="p-float-label w-full">
+                                            <input [(ngModel)]="adresse" pInputText id="adresse" required [disabled]="readOnly" class="w-full border border-gray-300 focus:border-indigo-600 focus:ring focus:ring-indigo-200" />
+                                            <label for="adresse">Adresse complète *</label>
+                                        </span>
+                                        <small class="p-error text-red-500" *ngIf="!adresse && submitted">Ce champ est requis</small>
+                                    </div>
+
+                                    <!-- Ligne 2 : Numéro du BC sur toute la largeur -->
+                                    <div class="field md:col-span-2">
+                                        <span class="p-float-label w-full">
+                                            <input [(ngModel)]="numero_bc" pInputText id="numero_bc" required [disabled]="readOnly" class="w-full border border-gray-300 focus:border-indigo-600 focus:ring focus:ring-indigo-200" />
+                                            <label for="numero_bc">Numéro de bon de commande *</label>
+                                        </span>
+                                        <small class="p-error text-red-500" *ngIf="!numero_bc && submitted">Ce champ est requis</small>
+                                    </div>
+
+                                    <!-- Ligne 3 : Cases à cocher et Description côte à côte -->
+                                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Cases à cocher (reformatées pour apparence bancaire) -->
+                                        <div class="card p-4 border-whithe bg-gray-600 bg-color-red-600">
+                                            <h3 class="text-lg font-medium mb-3">Montant Total (XOF)</h3>
+                                            <form class="flex flex-col gap-4" [formGroup]="formGroup">
+                                                <div class="flex items-center hover:bg-gray-100 p-2 rounded-lg transition-colors">
+                                                    <p-radioButton formControlName="taxe" value="HT" inputId="prix_ht" name="taxe" />
+                                                    <label for="prix_ht" class="ml-2 text-lg">Hors Taxes (HT)</label>
+                                                </div>
+                                                <div class="flex items-center hover:bg-gray-100 p-2 rounded-lg transition-colors">
+                                                    <p-radioButton formControlName="taxe" value="TTC" inputId="prix_ttc" name="taxe" />
+                                                    <label for="prix_ttc" class="ml-2 text-lg">Toutes Taxes Comprises (TTC)</label>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        <!-- Zone de description -->
+                                        <div class="field">
+                                            <span class="p-float-label w-full">
+                                                <textarea
+                                                    [(ngModel)]="description"
+                                                    pInputTextarea
+                                                    id="description"
+                                                    rows="5"
+                                                    class="w-full border border-gray-300 focus:border-indigo-600 focus:ring focus:ring-indigo-200"
+                                                    [disabled]="readOnly"
+                                                    [autoResize]="false"
+                                                >
+                                                </textarea>
+                                                <label for="description">Description de la prestation *</label>
+                                            </span>
+                                            <small class="p-error text-red-500" *ngIf="!description && submitted">Ce champ est requis</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex pt-6 justify-center">
+                                <p-button (onClick)="step1Valid ? activateCallback(2) : validateStep1()" [disabled]="isSubmitting" label="Continuer" icon="pi pi-arrow-right" iconPos="right" styleClass="p-button-rounded"> </p-button>
+                            </div>
+                        </ng-template>
+                    </p-step-panel>
+
+                    <p-step-panel [value]="2">
+                        <ng-template #content let-activateCallback="activateCallback">
+                            <!-- Bouton de retour -->
+                            <div class="flex justify-start mb-4">
+                                <p-button (onClick)="activateCallback(1)" label="Retour" icon="pi pi-arrow-left" styleClass="p-button-rounded p-button-outlined"> </p-button>
+                            </div>
+
+                            <!-- Contenu principal -->
+                            <div class="card p-4 border-l-4 border-whithe shadow-lg bg-gray-600">
+                                <div class="text-center mb-6">
+                                    <h2 class="text-2xl font-bold">Critères d'évaluation</h2>
+                                    <div class="divider my-2 mx-auto w-24"></div>
+                                </div>
+
+                                <!-- Légende améliorée -->
+                                <div class="flex justify-center mb-6">
+                                    <div class="card p-3 w-full md:w-3/4">
+                                        <h3 class="text-lg font-medium mb-2 text-center">Barème d'évaluation</h3>
+                                        <div class="grid grid-cols-4 gap-2 text-center">
+                                            <div class="bg-red-500 p-2 rounded">
+                                                <div class="font-bold">0-2</div>
+                                                <div class="text-sm">Insuffisant</div>
+                                            </div>
+                                            <div class="bg-yellow-500 p-2 rounded">
+                                                <div class="font-bold">2-3</div>
+                                                <div class="text-sm">Moyen</div>
+                                            </div>
+                                            <div class="bg-orange-500 p-2 rounded">
+                                                <div class="font-bold">3-4</div>
+                                                <div class="text-sm">Bon</div>
+                                            </div>
+                                            <div class="bg-green-500 p-2 rounded">
+                                                <div class="font-bold">4-5</div>
+                                                <div class="text-sm">Excellent</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Onglet d'évaluation -->
+                                <p-tabView [formGroup]="formGroup">
+                                    <p-tabPanel header="Bénéficiaire (65%)">
+                                        <div formGroupName="beneficiary" class="p-4">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                                <!-- Direction -->
+                                                <div class="field">
+                                                    <span class="p-float-label w-full">
+                                                        <input pInputText class="w-full border border-gray-300 focus:border-indigo-600 focus:ring focus:ring-indigo-200" formControlName="direction" id="direction" />
+                                                        <label for="direction">Direction *</label>
+                                                    </span>
+                                                    <small *ngIf="formGroup.get('beneficiary.direction')?.invalid && formGroup.get('beneficiary.direction')?.touched" class="p-error text-red-500">La direction est obligatoire.</small>
+                                                </div>
+
+                                                <!-- Évaluateur -->
+                                                <div class="field">
+                                                    <span class="p-float-label w-full">
+                                                        <input pInputText class="w-full border border-gray-300 focus:border-indigo-600 focus:ring focus:ring-indigo-200" formControlName="evaluator" id="evaluator" />
+                                                        <label for="evaluator">Évaluateur *</label>
+                                                    </span>
+                                                    <small *ngIf="formGroup.get('beneficiary.evaluator')?.invalid && formGroup.get('beneficiary.evaluator')?.touched" class="p-error text-red-500">L'évaluateur est obligatoire.</small>
+                                                </div>
+                                            </div>
+
+                                            <!-- Grille des critères d'évaluation -->
+                                            <div class="card p-4 bg-gray-1000">
+                                                <h3 class="text-lg font-medium mb-4">Évaluation des critères</h3>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div *ngFor="let field of beneficiaryFields" class="field card p-3 bg-gray-600">
+                                                        <label [for]="field.key" class="block font-medium mb-3">{{ field.label }}</label>
+                                                        <p-rating [id]="field.key" [formControlName]="field.key" [stars]="5" required="true"> </p-rating>
+                                                        <small *ngIf="formGroup.get('beneficiary.' + field.key)?.invalid" class="p-error text-red-500"></small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p-tabPanel>
+                                </p-tabView>
+                            </div>
+
+                            <!-- Bouton d'envoi -->
+                            <div class="flex pt-8 justify-center">
+                                <p-button
+                                    (onClick)="onSubmitEvaluation()"
+                                    [disabled]="!beneficiaryValid || isSubmitting"
+                                    label="Finaliser l'évaluation"
+                                    icon="pi pi-check-circle"
+                                    iconPos="right"
+                                    styleClass="p-button-rounded p-button-lg bg-indigo-600"
+                                >
+                                </p-button>
+                            </div>
+                        </ng-template>
+                    </p-step-panel>
+                </p-step-panels>
+            </p-stepper>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-end p-button-rounded bg-transparent-500">
+                <p-button icon="pi pi-times" label="Fermer" (onClick)="closeDialog()" styleClass="p-button-text p-button-rounded hover:bg-gray-500"></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Composant Toast pour les messages -->
+    <p-toast position="top-right"></p-toast>
+
+    <!-- Spinner avec overlay pour le chargement -->
+    <div *ngIf="isSubmitting" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div class="card p-6 shadow-xl">
+            <p-progressSpinner strokeWidth="5" animationDuration="1s" class="w-16 h-16"></p-progressSpinner>
+            <div class="text-center mt-4 font-medium">Traitement en cours...</div>
+        </div>
+    </div>
+</main>

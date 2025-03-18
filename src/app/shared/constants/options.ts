@@ -1,4 +1,4 @@
-import { SelectOption } from 'shared/models/select-option.model';
+import { SelectOption } from '../models/select-option.model';
 
 export const RolesOptions: SelectOption[] = [
     {

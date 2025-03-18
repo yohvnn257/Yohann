@@ -13,18 +13,16 @@ export const ADMIN_ROUTES: Route[] = [
     {
         path: 'utilisateur',
         component: UtilisateurComponent
-    }
+    },
     ,
     {
         path: 'particuliers',
         component: ParticuliersComponent
-    }
-    ,
+    },
     {
         path: 'entreprises',
         component: EntreprisesComponent
-    }
-    ,
+    },
     {
         path: 'validations',
         component: ValidationsComponent

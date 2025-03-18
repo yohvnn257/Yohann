@@ -1,0 +1,432 @@
+<!-- Contenu principal -->
+<main class="flex-1 p-4">
+    <div class="card bg-white rounded-xl shadow-lg p-6">
+        <!-- Étape 1: Liste des formulaires en attente -->
+        <!-- Étape 1: Liste des formulaires en attente -->
+        <div *ngIf="activeStep === 1" class="pending-forms-list">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-indigo-800">
+                    {{ userRole === 'DMG' ? 'Évaluations à valider' : 'Nouvelle évaluation fournisseur' }}
+                </h2>
+            </div>
+
+            <!-- Table des formulaires en attente -->
+            <div *ngIf="!isLoading && pendingForms.length > 0" class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="py-2 px-4 border border-gray-300 text-center">Fournisseur</th>
+                            <th class="py-2 px-4 border border-gray-300 text-center">Direction</th>
+                            <th class="py-2 px-4 border border-gray-300 text-center">Statut</th>
+                            <th class="py-2 px-4 border border-gray-300 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let form of pendingForms">
+                            <td class="py-2 px-4 border border-gray-300 text-center">{{ form.name }}</td>
+                            <td class="py-2 px-4 border border-gray-300 text-center">{{ form.beneficiaryEvaluation.direction }}</td>
+                            <td class="py-2 px-4 border border-gray-300 text-center">
+                                <span class="px-2 py-1 rounded text-xs" [ngClass]="getStatusClass(form.beneficiaryEvaluationStatus)">
+                                    {{ getStatusLabel(form.beneficiaryEvaluationStatus) }}
+                                </span>
+                            </td>
+                            <td class="py-2 px-4 border border-gray-300 items-center justify-center text-center">
+                                <button pButton icon="pi pi-eye" class="p-button-sm p-button-text" (click)="selectForm(form)" pTooltip="Voir détails"></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div *ngIf="isLoading" class="text-center p-6">
+                <p-progressSpinner></p-progressSpinner>
+            </div>
+
+            <div *ngIf="!isLoading && pendingForms.length === 0" class="text-center p-6">
+                <p>Aucune évaluation en attente</p>
+            </div>
+        </div>
+
+        <!-- Stepper pour les autres étapes -->
+        <div *ngIf="activeStep > 1 && selectedForm" class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl shadow-lg">
+            <p-stepper [(value)]="activeStep" class="mb-6">
+                <!-- Étapes du stepper -->
+                <p-step-list>
+                    <p-step [value]="2">
+                        <ng-template #content let-activateCallback="activateCallback">
+                            <button type="button" [disabled]="activeStep < 2" class="bg-transparent border-0" (click)="activateCallback()">
+                                <span class="rounded-full border-2 w-12 h-12 flex items-center justify-center" [ngClass]="{ 'bg-primary text-white border-primary': activeStep >= 2, 'border-gray-400': activeStep < 2 }">
+                                    <i class="pi pi-check"></i>
+                                </span>
+                                <span class="text-xs text-center block mt-1">Validation</span>
+                            </button>
+                        </ng-template>
+                    </p-step>
+
+                    <p-step [value]="3">
+                        <ng-template #content let-activateCallback="activateCallback">
+                            <button type="button" [disabled]="activeStep < 3" class="bg-transparent border-0" (click)="activateCallback()">
+                                <span class="rounded-full border-2 w-12 h-12 flex items-center justify-center" [ngClass]="{ 'bg-primary text-white border-primary': activeStep >= 3, 'border-gray-400': activeStep < 3 }">
+                                    <i class="pi pi-pencil"></i>
+                                </span>
+                                <span class="text-xs text-center block mt-1">DMG</span>
+                            </button>
+                        </ng-template>
+                    </p-step>
+
+                    <p-step [value]="4">
+                        <ng-template #content let-activateCallback="activateCallback">
+                            <button type="button" [disabled]="activeStep < 4" class="bg-transparent border-0" (click)="activateCallback()">
+                                <span class="rounded-full border-2 w-12 h-12 flex items-center justify-center" [ngClass]="{ 'bg-primary text-white border-primary': activeStep >= 4, 'border-gray-400': activeStep < 4 }">
+                                    <i class="pi pi-star"></i>
+                                </span>
+                                <span class="text-xs text-center block mt-1">Résultat</span>
+                            </button>
+                        </ng-template>
+                    </p-step>
+                </p-step-list>
+
+                <!-- Contenu des étapes -->
+                <p-step-panels>
+                    <!-- Étape 2: Validation de l'évaluation bénéficiaire par la DMG -->
+                    <p-step-panel [value]="2">
+                        <ng-template #content>
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-2xl font-bold text-indigo-800">Validation de l'évaluation bénéficiaire</h2>
+                                    <div class="flex space-x-2">
+                                        <button pButton label="Rejeter" icon="pi pi-times" class="p-button-danger" (click)="openRejectDialog()"></button>
+                                        <button pButton label="Approuver" icon="pi pi-check" class="p-button-success" (click)="approveBeneficiaryEvaluation()"></button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <h3 class="text-lg font-semibold">NOM: {{ selectedForm?.name }}</h3>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-lg font-semibold">NUMERO BC: {{ selectedForm?.bcNumber }}</h3>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-lg font-semibold">ADRESSE: {{ selectedForm?.address }}</h3>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-lg font-semibold">MONTANT TOTAL (XOF): {{ selectedForm?.taxType }}</h3>
+                                    </div>
+                                </div>
+
+                                <!-- Détails de l'évaluation bénéficiaire -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-700 font-medium">Direction</label>
+                                        <input type="text" class="w-full p-2 border rounded-md bg-gray-50" [value]="formGroup.get('beneficiary.direction')?.value" readonly />
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 font-medium">Évaluateur</label>
+                                        <input type="text" class="w-full p-2 border rounded-md bg-gray-50" [value]="formGroup.get('beneficiary.evaluator')?.value" readonly />
+                                    </div>
+
+                                    <div *ngFor="let field of beneficiaryFields">
+                                        <label class="block text-gray-700 font-medium">{{ field.label }}</label>
+                                        <p-rating [ngModel]="formGroup.get('beneficiary.' + field.key)?.value" [readonly]="true" [stars]="5"></p-rating>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <label class="block text-gray-700 font-medium">Description</label>
+                                    <textarea class="w-full p-2 border rounded-md bg-gray-50" rows="5" [value]="selectedForm?.description" readonly></textarea>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-step-panel>
+
+                    <!-- Étape 3: Saisie de l'évaluation DMG -->
+                    <p-step-panel [value]="3">
+                        <ng-template #content>
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-2xl font-bold text-indigo-800">Évaluation DMG</h2>
+                                    <div>
+                                        <button pButton label="Valider l'évaluation" icon="pi pi-check" class="p-button-primary" [disabled]="formGroup.get('dmg')?.invalid || isLoading" (click)="submitDmgEvaluation()"></button>
+                                        <p-progressSpinner *ngIf="isLoading" styleClass="w-6 h-6" strokeWidth="4" animationDuration=".10s"></p-progressSpinner>
+                                    </div>
+                                </div>
+
+                                <form [formGroup]="formGroup">
+                                    <div formGroupName="dmg" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-gray-700 font-medium">Évaluateur DMG</label>
+                                            <input type="text" formControlName="evaluator" class="w-full p-2 border rounded-md" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 font-medium">Date d'évaluation</label>
+                                            <p-calendar formControlName="evaluationDate" [showIcon]="true" dateFormat="dd/mm/yy" class="w-full"></p-calendar>
+                                        </div>
+
+                                        <div *ngFor="let field of dmgFields">
+                                            <label class="block text-gray-700 font-medium">{{ field.label }}</label>
+                                            <p-rating formControlName="{{ field.key }}" [stars]="5"></p-rating>
+                                        </div>
+
+                                        <div class="col-span-2">
+                                            <label class="block text-gray-700 font-medium">Plan d'action</label>
+                                            <textarea formControlName="actionPlan" rows="4" class="w-full p-2 border rounded-md"></textarea>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </ng-template>
+                    </p-step-panel>
+
+                    <!-- Étape 4: Résultat final -->
+                    <p-step-panel [value]="4">
+                        <ng-template #content>
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-2xl font-bold text-indigo-800">Résultat de l'évaluation</h2>
+                                    <div>
+                                        <button pButton label="Exporter PDF" icon="pi pi-file-pdf" class="p-button-secondary" (click)="exportPdf()"></button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                                    <!-- Section fournisseur -->
+                                    <div class="bg-blue-50 p-4 rounded-lg">
+                                        <h3 class="font-semibold text-lg mb-2">Informations fournisseur</h3>
+                                        <div class="space-y-2">
+                                            <div><span class="font-medium">Nom :</span> {{ selectedForm?.name }}</div>
+                                            <div><span class="font-medium">Adresse :</span> {{ selectedForm?.address }}</div>
+                                            <div><span class="font-medium">BC :</span> {{ selectedForm?.bcNumber }}</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Note globale -->
+                                    <div class="bg-indigo-50 p-4 rounded-lg flex flex-col items-center justify-center">
+                                        <h3 class="font-semibold text-lg mb-2">Note globale</h3>
+                                        <div class="text-5xl font-bold text-indigo-600">{{ finalScore | number: '1.1-1' }}/5</div>
+                                        <p-rating [ngModel]="finalScore" [readonly]="true" [stars]="5" class="mt-2"></p-rating>
+                                        <div class="mt-2 font-medium" [ngClass]="getFinalScoreClass()">
+                                            {{ getFinalScoreLabel() }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Détails des évaluations -->
+                                <div class="mt-6">
+                                    <h3 class="font-semibold text-lg mb-4">Détails des évaluations</h3>
+
+                                    <p-tabView>
+                                        <p-tabPanel header="Évaluation Bénéficiaire">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div *ngFor="let field of beneficiaryFields">
+                                                    <div class="flex justify-between items-center">
+                                                        <span class="font-medium">{{ field.label }}</span>
+                                                        <p-rating [ngModel]="formGroup.get('beneficiary.' + field.key)?.value" [readonly]="true" [stars]="5"></p-rating>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-4">
+                                                <div class="font-medium">Description</div>
+                                                <p class="italic mt-1 p-2 bg-gray-50 rounded">
+                                                    {{ selectedForm?.description || 'Aucune description' }}
+                                                </p>
+                                            </div>
+                                        </p-tabPanel>
+
+                                        <p-tabPanel header="Évaluation DMG">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div *ngFor="let field of dmgFields">
+                                                    <div class="flex justify-between items-center">
+                                                        <span class="font-medium">{{ field.label }}</span>
+                                                        <p-rating [ngModel]="formGroup.get('dmg.' + field.key)?.value" [readonly]="true" [stars]="5"></p-rating>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-4">
+                                                <div class="font-medium">Plan d'action</div>
+                                                <p class="mt-1 p-2 bg-gray-50 rounded">
+                                                    {{ formGroup.get('dmg.actionPlan')?.value || "Aucun plan d'action défini" }}
+                                                </p>
+                                            </div>
+                                        </p-tabPanel>
+                                    </p-tabView>
+                                </div>
+
+                                <!-- Historique -->
+                                <div class="mt-6">
+                                    <h3 class="font-semibold text-lg mb-4">Historique des évaluations</h3>
+
+                                    <p-timeline [value]="evaluationHistory" layout="horizontal">
+                                        <ng-template pTemplate="content" let-event>
+                                            <div class="text-sm">
+                                                <div class="font-medium">{{ event.title }}</div>
+                                                <div>{{ event.date | date: 'dd/MM/yyyy HH:mm' }}</div>
+                                                <div class="text-gray-600">{{ event.user }}</div>
+                                            </div>
+                                        </ng-template>
+                                    </p-timeline>
+                                </div>
+                            </div>
+
+                            <div class="flex pt-8 justify-center">
+                                <p-button (onClick)="activeStep = 1" [disabled]="" label="Terminer l'évaluation" icon="pi pi-check-circle" iconPos="right" styleClass="p-button-rounded p-button-lg bg-indigo-600"> </p-button>
+                            </div>
+                        </ng-template>
+                    </p-step-panel>
+                </p-step-panels>
+            </p-stepper>
+        </div>
+    </div>
+</main>
+
+<!-- Élément invisible pour l'export PDF -->
+<div id="pdfExportContent" style="position: absolute; left: -9999px; top: -9999px">
+    <div style="padding: 20px; font-family: Arial, sans-serif">
+        <h2 style="color: #4338ca; margin-bottom: 20px">Résultat de l'évaluation</h2>
+
+        <!-- Informations fournisseur -->
+        <div style="margin-bottom: 20px; padding: 10px; background-color: #f0f5ff; border-radius: 5px">
+            <h3 style="margin-bottom: 10px">Informations fournisseur</h3>
+            <div style="margin-bottom: 5px"><strong>Nom:</strong> {{ selectedForm?.name }}</div>
+            <div style="margin-bottom: 5px"><strong>Adresse:</strong> {{ selectedForm?.address }}</div>
+            <div style="margin-bottom: 5px"><strong>BC:</strong> {{ selectedForm?.bcNumber }}</div>
+        </div>
+
+        <!-- Note globale -->
+        <div style="margin-bottom: 20px; padding: 10px; background-color: #eef2ff; border-radius: 5px; text-align: center">
+            <h3 style="margin-bottom: 10px">Note globale</h3>
+            <div style="font-size: 24px; font-weight: bold; color: #4338ca">{{ finalScore | number: '1.1-1' }}/5</div>
+            <div style="margin-top: 10px; font-weight: bold" [ngClass]="getFinalScoreClass()">{{ getFinalScoreLabel() }}</div>
+        </div>
+
+        <!-- Détails des évaluations -->
+        <div style="margin-bottom: 20px">
+            <h3 style="margin-bottom: 10px">Évaluation Bénéficiaire</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <div *ngFor="let field of beneficiaryFields" style="margin-bottom: 8px">
+                    <div style="display: flex; justify-content: space-between">
+                        <span style="font-weight: bold">{{ field.label }}</span>
+                        <span>{{ formGroup.get('beneficiary.' + field.key)?.value }}/5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px">
+            <h3 style="margin-bottom: 10px">Évaluation DMG</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <div *ngFor="let field of dmgFields" style="margin-bottom: 8px">
+                    <div style="display: flex; justify-content: space-between">
+                        <span style="font-weight: bold">{{ field.label }}</span>
+                        <span>{{ formGroup.get('dmg.' + field.key)?.value }}/5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 10px">
+                <div style="font-weight: bold">Plan d'action</div>
+                <p style="margin-top: 5px; padding: 8px; background-color: #f9fafb; border-radius: 5px">
+                    {{ formGroup.get('dmg.actionPlan')?.value || "Aucun plan d'action défini" }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Historique -->
+        <div>
+            <h3 style="margin-bottom: 10px">Historique des évaluations</h3>
+            <div style="display: flex; justify-content: space-between">
+                <div *ngFor="let event of evaluationHistory" style="text-align: center; width: 25%">
+                    <div style="font-weight: bold">{{ event.title }}</div>
+                    <div>{{ event.date | date: 'dd/MM/yyyy' }}</div>
+                    <div style="color: #6b7280">{{ event.user }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Élément invisible pour l'export PDF -->
+<div id="pdfExportContent" style="position: absolute; left: -9999px; top: -9999px">
+    <div style="padding: 20px; font-family: Arial, sans-serif">
+        <h2 style="color: #4338ca; margin-bottom: 20px">Résultat de l'évaluation</h2>
+
+        <!-- Informations fournisseur -->
+        <div style="margin-bottom: 20px; padding: 10px; background-color: #f0f5ff; border-radius: 5px">
+            <h3 style="margin-bottom: 10px">Informations fournisseur</h3>
+            <div style="margin-bottom: 5px"><strong>Nom:</strong> {{ selectedForm?.name }}</div>
+            <div style="margin-bottom: 5px"><strong>Adresse:</strong> {{ selectedForm?.address }}</div>
+            <div style="margin-bottom: 5px"><strong>BC:</strong> {{ selectedForm?.bcNumber }}</div>
+        </div>
+
+        <!-- Note globale -->
+        <div style="margin-bottom: 20px; padding: 10px; background-color: #eef2ff; border-radius: 5px; text-align: center">
+            <h3 style="margin-bottom: 10px">Note globale</h3>
+            <div style="font-size: 24px; font-weight: bold; color: #4338ca">{{ finalScore | number: '1.1-1' }}/5</div>
+            <div style="margin-top: 10px; font-weight: bold" [ngClass]="getFinalScoreClass()">{{ getFinalScoreLabel() }}</div>
+        </div>
+
+        <!-- Détails des évaluations -->
+        <div style="margin-bottom: 20px">
+            <h3 style="margin-bottom: 10px">Évaluation Bénéficiaire</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <div *ngFor="let field of beneficiaryFields" style="margin-bottom: 8px">
+                    <div style="display: flex; justify-content: space-between">
+                        <span style="font-weight: bold">{{ field.label }}</span>
+                        <span>{{ formGroup.get('beneficiary.' + field.key)?.value }}/5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px">
+            <h3 style="margin-bottom: 10px">Évaluation DMG</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <div *ngFor="let field of dmgFields" style="margin-bottom: 8px">
+                    <div style="display: flex; justify-content: space-between">
+                        <span style="font-weight: bold">{{ field.label }}</span>
+                        <span>{{ formGroup.get('dmg.' + field.key)?.value }}/5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 10px">
+                <div style="font-weight: bold">Plan d'action</div>
+                <p style="margin-top: 5px; padding: 8px; background-color: #f9fafb; border-radius: 5px">
+                    {{ formGroup.get('dmg.actionPlan')?.value || "Aucun plan d'action défini" }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Historique -->
+        <div>
+            <h3 style="margin-bottom: 10px">Historique des évaluations</h3>
+            <div style="display: flex; justify-content: space-between">
+                <div *ngFor="let event of evaluationHistory" style="text-align: center; width: 25%">
+                    <div style="font-weight: bold">{{ event.title }}</div>
+                    <div>{{ event.date | date: 'dd/MM/yyyy' }}</div>
+                    <div style="color: #6b7280">{{ event.user }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dialog de rejet -->
+<p-dialog header="Motif de rejet" [(visible)]="rejectDialogVisible" [modal]="true" [style]="{ width: '450px' }">
+    <div class="p-field mt-4">
+        <label for="rejectReason" class="font-medium mb-2 block">Motif du rejet</label>
+        <textarea id="rejectReason" [(ngModel)]="rejectReason" rows="5" class="w-full p-2 border rounded-md"></textarea>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="rejectDialogVisible = false"></button>
+        <button pButton label="Confirmer" icon="pi pi-check" class="p-button-danger" [disabled]="!rejectReason" (click)="rejectBeneficiaryEvaluation()"></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Composant Toast pour les messages -->
+<p-toast position="top-right"></p-toast>

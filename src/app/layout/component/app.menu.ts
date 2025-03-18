@@ -23,11 +23,12 @@ export class AppMenu {
             {
                 label: 'Menu',
                 items: [
-                    { label: 'Tableau de bord', icon: 'pi pi-fw pi-home', routerLink: ['/'] },
-                    { label: 'Particuliers', icon: 'pi pi-fw pi-user', routerLink: ['/particuliers'] },
-                    { label: 'Entreprises', icon: 'pi pi-fw pi-user', routerLink: ['/entreprises'] },
-                    { label: 'Validations', icon: 'pi pi-fw pi-user', routerLink: ['/validations'] },
-                   
+                    { label: 'Tableau de bord', icon: 'pi pi-fw pi-home', routerLink: ['/app'] },
+                    { label: 'Particuliers', icon: 'pi pi-fw pi-user', routerLink: ['/app/particuliers'] },
+                    { label: 'Entreprises', icon: 'pi pi-fw pi-user', routerLink: ['/app/entreprises'] },
+                    { label: 'Validations', icon: 'pi pi-fw pi-user', routerLink: ['/app/validations'] },
+                    { label: 'Dashboard DMG', icon: 'pi pi-fw pi-user', routerLink: ['/app/dmg-dashboard'] },
+                    { label: 'Bénéficiaire', icon: 'pi pi-fw pi-user', routerLink: ['/app/create-formulaire'] }
                 ]
             }
         ];

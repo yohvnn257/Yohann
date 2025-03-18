@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthService } from '../services/auth.service';
-import { HUB_URL } from '../constants/url-serveur';
+import { AuthService } from '../../service/auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -13,10 +12,10 @@ export class AuthGuard implements CanActivate {
         private route: Router
     ) {}
 
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-        const token = this.loginService.recupererToken();
-        if (token === '' || !this.loginService.isAuthenticated()) {
-            window.location.href = HUB_URL;
+    canActivate(_route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
+        const token = this.loginService.getToken();
+        if (!token || !this.loginService.isLoggedIn()) {
+            window.location.href = 'http://localhost:4200/login';
             return false;
         }
         return true;

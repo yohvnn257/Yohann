@@ -1,0 +1,55 @@
+<!-- src/app/pages/admin-create-user-page/admin-create-user-page.component.html -->
+<div class="card m-3">
+    <div class="card-header">
+        <h2 class="card-title">Créer un Nouvel Utilisateur</h2>
+    </div>
+    <div class="card-body">
+        <p-messages *ngIf="message" severity="success" [closable]="true">
+            <ng-template pTemplate="content">
+                <span>{{ message }}</span>
+            </ng-template>
+        </p-messages>
+
+        <p-messages *ngIf="error" severity="error" [closable]="true">
+            <ng-template pTemplate="content">
+                <span>{{ error }}</span>
+            </ng-template>
+        </p-messages>
+
+        <form (ngSubmit)="handleSubmit($event)" class="p-fluid">
+            <div class="field mb-4">
+                <span class="p-float-label">
+                    <input pInputText id="email" name="email" type="email" [(ngModel)]="formData.email" (input)="handleChange($event)" required />
+                    <label for="email">Email</label>
+                </span>
+            </div>
+
+            <div class="field mb-4">
+                <span class="p-float-label">
+                    <p-password id="password" name="password" [(ngModel)]="formData.password" (input)="handleChange($event)" [toggleMask]="true" [feedback]="true" required></p-password>
+                    <label for="password">Mot de passe</label>
+                </span>
+            </div>
+
+            <div class="field-group mb-4">
+                <label class="block font-bold mb-2">Rôles</label>
+                <div class="p-field-checkbox mb-2">
+                    <p-checkbox id="role-user" [binary]="true" [ngModel]="formData.roles.ROLE_USER" (onChange)="handleRoleChange('ROLE_USER')" name="role-user"></p-checkbox>
+                    <label for="role-user" class="ml-2">Utilisateur (ROLE_USER)</label>
+                </div>
+                <div class="p-field-checkbox mb-2">
+                    <p-checkbox id="role-dmg" [binary]="true" [ngModel]="formData.roles.ROLE_DMG" (onChange)="handleRoleChange('ROLE_DMG')" name="role-dmg"></p-checkbox>
+                    <label for="role-dmg" class="ml-2">DMG (ROLE_DMG)</label>
+                </div>
+                <div class="p-field-checkbox mb-2">
+                    <p-checkbox id="role-admin" [binary]="true" [ngModel]="formData.roles.ROLE_ADMIN" (onChange)="handleRoleChange('ROLE_ADMIN')" name="role-admin"></p-checkbox>
+                    <label for="role-admin" class="ml-2">Administrateur (ROLE_ADMIN)</label>
+                </div>
+            </div>
+
+            <div class="flex justify-content-end">
+                <p-button type="submit" label="Créer l'utilisateur" icon="pi pi-user-plus" styleClass="p-button-primary"></p-button>
+            </div>
+        </form>
+    </div>
+</div>
